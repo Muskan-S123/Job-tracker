@@ -7,14 +7,14 @@ function App() {
   const [status, setStatus] = useState("Applied")
 
   useEffect(()=>{
-    fetch("https://job-tracker-backend-e3uk.onrender.com")
+    fetch("https://job-tracker-backend-e3uk.onrender.com/jobs")
        .then((res)=>res.json())
        .then((data)=>setJobs(data))
   },[])
 
   async function addJob() {
     const newJob = { company: company, status: status }
-    const res = await fetch("https://job-tracker-backend-e3uk.onrender.com", {
+    const res = await fetch("https://job-tracker-backend-e3uk.onrender.com/jobs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(newJob)
@@ -25,7 +25,7 @@ function App() {
   }
   
   async function deleteJob(id) {
-  await fetch(`https://job-tracker-backend-e3uk.onrender.com`, {
+  await fetch(`https://job-tracker-backend-e3uk.onrender.com/jobs/${id}`, {
     method: "DELETE"
   })
   setJobs(jobs.filter((job) => job._id !== id))
