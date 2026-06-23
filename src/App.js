@@ -5,6 +5,7 @@ function App() {
   const [jobs, setJobs] = useState([])
   const [company, setCompany] = useState("")
   const [status, setStatus] = useState("Applied")
+  const [editingId, setEditingId] = useState(null)
 
   useEffect(()=>{
     fetch("https://job-tracker-backend-e3uk.onrender.com/jobs")
@@ -13,8 +14,27 @@ function App() {
   },[])
 
   async function addJob() {
+    
+  console.log("editingId is:", editingId)
+ 
+  
     const newJob = { company: company, status: status }
-    const res = await fetch("https://job-tracker-backend-e3uk.onrender.com/jobs", {
+    if(editingId){
+      console.log("PUT URL:", `https://job-tracker-backend-e3uk.onrender.com/jobs/${editingId}`)
+      const res = await fetch(`https://job-tracker-backend-e3uk.onrender.com/jobs/${editingId}`, {
+        method: "PUT",
+        headers: {"Content-Type":"application/json"},
+        body:JSON.stringify(newJob)
+      })
+      const updatedJob = await res.json()
+      setJobs(jobs.map((job) => job._id === editingId ? updatedJob:job))
+      setCompany("")
+      setEditingId(null)
+
+
+    }
+    else{
+      const res = await fetch("https://job-tracker-backend-e3uk.onrender.com/jobs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(newJob)
@@ -22,6 +42,8 @@ function App() {
     const savedJob = await res.json()
     setJobs([...jobs, savedJob])
     setCompany("")
+    }
+    
   }
   
   async function deleteJob(id) {
@@ -30,6 +52,12 @@ function App() {
   })
   setJobs(jobs.filter((job) => job._id !== id))
   }
+
+  function editJob(job) {
+  setCompany(job.company)
+  setStatus(job.status)
+  setEditingId(job._id)
+}
 
   return (
   <div>
@@ -42,7 +70,7 @@ function App() {
         value={company}
         onChange={(e) => setCompany(e.target.value)}
       />
-      <select onChange={(e) => setStatus(e.target.value)}>
+      <select value={status} onChange={(e) => setStatus(e.target.value)}>
         <option>Applied</option>
         <option>Interview</option>
         <option>Offer</option>
@@ -58,6 +86,7 @@ function App() {
           <p>{job.status}</p>
         </div>
         <button className="delete-btn" onClick={() => deleteJob(job._id)}>Delete</button>
+        <button className="edit-btn" onClick={() => editJob(job)}>Edit</button>
       </div>
     ))}
   </div>
